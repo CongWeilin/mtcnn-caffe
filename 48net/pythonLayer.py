@@ -1,7 +1,5 @@
 import sys
-sys.path.append('/home/congweilin/caffe/examples/FaceDetect')
 sys.path.append('/home/congweilin/caffe/python')
-sys.path.append('/usr/local/lib/python2.7/site-packages')
 sys.path.append('/usr/lib/python2.7/dist-packages')
 import cv2
 import caffe
@@ -43,103 +41,113 @@ class Data_Layer_train(caffe.Layer):
 class BatchLoader(object):
 
     def __init__(self,cls_list,roi_list,pts_list,net_side,cls_root,roi_root,pts_root):
-	# Load mean file
 	self.mean = 128
         self.im_shape = net_side
         self.cls_root = cls_root
 	self.roi_root = roi_root
 	self.pts_root = pts_root
-	self.flip = False
-	# get list of image indexes.
+	self.roi_list = []
+	self.cls_list = []
+	self.pts_list = []
+	print "Start Reading Data into Memory..."
 	fid = open(cls_list,'r')
-        self.cls_list = fid.readlines()
+        lines = fid.readlines()
 	fid.close()
-	fid = open(roi_list,'r')
-        self.roi_list = fid.readlines()
-	fid.close()
-	fid = open(pts_list,'r')
-        self.pts_list = fid.readlines()
-	fid.close()
+	for line in lines:
+	    words = line.split()
+	    image_file_name = self.cls_root + words[0]
+	    im = cv2.imread(image_file_name)
+	    h,w,ch = im.shape
+	    if h!=self.im_shape or w!=self.im_shape:
+	        im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
+	    im = np.swapaxes(im, 0, 2)
+	    im -= self.mean
+
+            label    = int(words[1])
+            roi      = (float(words[2]),float(words[3]),float(words[4]),float(words[5]))
+	    pts	     = (float(words[6]),float(words[7]),float(words[8]),float(words[9]),float(words[10]),float(words[11]),float(words[12]),float(words[13]),float(words[14]),float(words[15]))
+	    self.cls_list.append([im,label,roi,pts])
 	random.shuffle(self.cls_list)
+        self.cls_cur = 0
+	print str(len(self.cls_list))," Classify Data have been read into Memory..."
+	
+	fid = open(roi_list,'r')
+        lines = fid.readlines()
+	fid.close()
+	for line in lines:
+	    words = line.split()
+	    image_file_name = self.roi_root + words[0]
+	    im = cv2.imread(image_file_name)
+	    h,w,ch = im.shape
+	    if h!=self.im_shape or w!=self.im_shape:
+	        im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
+	    im = np.swapaxes(im, 0, 2)
+	    im -= self.mean
+            label    = int(words[1])
+            roi      = (float(words[2]),float(words[3]),float(words[4]),float(words[5]))
+	    pts	     = (float(words[6]),float(words[7]),float(words[8]),float(words[9]),float(words[10]),float(words[11]),float(words[12]),float(words[13]),float(words[14]),float(words[15]))
+	    self.cls_list.append([im,label,roi,pts])
 	random.shuffle(self.roi_list)
-	random.shuffle(self.pts_list)
-	# current image
-        self.cls_cur = 0 
 	self.roi_cur = 0 
+	print str(len(self.roi_list))," Regression Data have been read into Memory..."
+
+	fid = open(pts_list,'r')
+        lines = fid.readlines()
+	fid.close()
+	for line in lines:
+	    words = line.split()
+	    image_file_name = self.pts_root + words[0]
+	    im = cv2.imread(image_file_name)
+	    h,w,ch = im.shape
+	    if h!=self.im_shape or w!=self.im_shape:
+	        im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
+	    im = np.swapaxes(im, 0, 2)
+	    im -= self.mean
+            label    = int(words[1])
+            roi      = (float(words[2]),float(words[3]),float(words[4]),float(words[5]))
+	    pts	     = (float(words[6]),float(words[7]),float(words[8]),float(words[9]),float(words[10]),float(words[11]),float(words[12]),float(words[13]),float(words[14]),float(words[15]))
+	    self.pts__list.append([im,label,roi,pts])
+	random.shuffle(self.pts_list)
 	self.pts_cur = 0 
+	print str(len(self.pts_list))," Regression Data have been read into Memory..."
+
     def load_next_image(self,loss_task):
-        """
-        Load the next image in a batch.
-        """
-        # Did we finish an epoch?
         if self.cls_cur == len(self.cls_list):
             self.cls_cur = 0
             random.shuffle(self.cls_list)
-	    if self.flip == True:
-		self.flip = False
-	    else:
-		self.flip = True
-	if self.roi_cur == len(self.roi_list):
-            self.roi_cur = 0
-            random.shuffle(self.roi_list)
-	if self.pts_cur == len(self.pts_list):
-            self.pts_cur = 0
-            random.shuffle(self.pts_list)
-        # Load an image
-	if loss_task % 3 == 0:
-            index = self.cls_list[self.cls_cur]  # Get the image index
-            words = index.split()
-            image_file_name = self.cls_root + words[0]
-	    #print image_file_name
-	    im = cv2.imread(image_file_name)
-	    if self.flip == True:
-		im = cv2.flip(im,1)
-	    h,w,ch = im.shape
-	    if h!=self.im_shape or w!=self.im_shape:
-		im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
-		print "Reshape0"
-	    im = np.swapaxes(im, 0, 2)
-	    im -= self.mean
-	    # Load and prepare ground truth
-            label    = int(words[1])
-            roi      = (float(words[2]),float(words[3]),float(words[4]),float(words[5]))
-	    pts	     = (float(words[6]),float(words[7]),float(words[8]),float(words[9]),float(words[10]),float(words[11]),float(words[12]),float(words[13]),float(words[14]),float(words[15]))
+	if loss_task % 1 == 0:
+            cur_data = self.cls_list[self.cls_cur]  # Get the image index
+	    im	     = cur_data[0]
+            label    = cur_data[1]
+            roi      = cur_data[2]
+	    pts	     = cur_data[3]
             self.cls_cur += 1
             return im, label, roi, pts
-	if loss_task % 3 == 1:
-	    index = self.roi_list[self.roi_cur]  # Get the image index
-            words = index.split()
-            image_file_name = self.roi_root + words[0]
-            im = cv2.imread(image_file_name)
-	    h,w,ch = im.shape
-	    if h!=self.im_shape or w!=self.im_shape:
-		im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
-		print "Reshape1"
-	    im = np.swapaxes(im, 0, 2)
-	    im -= self.mean
-	    # Load and prepare ground truth
-            label    = int(words[1])
-            roi      = (float(words[2]),float(words[3]),float(words[4]),float(words[5]))
-	    pts	     = (float(words[6]),float(words[7]),float(words[8]),float(words[9]),float(words[10]),float(words[11]),float(words[12]),float(words[13]),float(words[14]),float(words[15]))
+
+        if self.roi_cur == len(self.roi_list):
+            self.roi_cur = 0
+            random.shuffle(self.roi_list)
+	if loss_task % 2 == 1:
+            roi_data = self.roi_list[self.roi_cur]  # Get the image index
+	    im	     = cur_data[0]
+            label    = cur_data[1]
+            roi      = cur_data[2]
+	    pts	     = cur_data[3]
             self.roi_cur += 1
             return im, label, roi, pts
+
+        if self.pts_cur == len(self.pts_list):
+            self.pts_cur = 0
+            random.shuffle(self.pts_list)
 	if loss_task % 3 == 2:
-	    index = self.pts_list[self.pts_cur]  # Get the image index
-            words = index.split()
-            image_file_name = self.pts_root + words[0]
-            im = cv2.imread(image_file_name)
-	    h,w,ch = im.shape
-	    if h!=self.im_shape or w!=self.im_shape:
-		im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
-		print "Reshape2"
-	    im = np.swapaxes(im, 0, 2)
-	    im -= self.mean
-	    # Load and prepare ground truth
-            label    = int(words[1])
-            roi      = (float(words[2]),float(words[3]),float(words[4]),float(words[5]))
-	    pts	     = (float(words[6]),float(words[7]),float(words[8]),float(words[9]),float(words[10]),float(words[11]),float(words[12]),float(words[13]),float(words[14]),float(words[15]))
+            pts_data = self.pts_list[self.pts_cur]  # Get the image index
+	    im	     = cur_data[0]
+            label    = cur_data[1]
+            roi      = cur_data[2]
+	    pts	     = cur_data[3]
             self.pts_cur += 1
             return im, label, roi, pts
+
 ################################################################################
 #########################ROI Loss Layer By Python###############################
 ################################################################################
