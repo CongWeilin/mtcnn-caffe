@@ -37,70 +37,74 @@ class Data_Layer_train(caffe.Layer):
 
 class BatchLoader(object):
     def __init__(self,cls_list,roi_list,net_side,cls_root,roi_root):
- 	# Load mean file
 	self.mean = 128
         self.im_shape = net_side
         self.cls_root = cls_root
 	self.roi_root = roi_root
-	self.flip = False
-	# get list of image indexes.
+	self.roi_list = []
+	self.cls_list = []
+	print "Start Reading Data into Memory..."
 	fid = open(cls_list,'r')
-        self.cls_list = fid.readlines()
+        lines = fid.readlines()
 	fid.close()
-	fid = open(roi_list,'r')
-        self.roi_list = fid.readlines()
-	fid.close()
-	random.shuffle(self.cls_list)
-	random.shuffle(self.roi_list)
-	# current image
-        self.cls_cur = 0
-	self.roi_cur = 0  
-    def load_next_image(self,loss_task):
-       
-        # Finish an epoch
-        if self.cls_cur == len(self.cls_list):
-            self.cls_cur = 0
-            random.shuffle(self.cls_list)
-	    if self.flip == True:
-		self.flip = False
-	    else:
-		self.flip = True
-	if self.roi_cur == len(self.roi_list):
-            self.roi_cur = 0
-            random.shuffle(self.roi_list)
-        # Load an image
-	if loss_task % 2 == 0:
-            index = self.cls_list[self.cls_cur]  # Get the image index
-            words = index.split()
-            image_file_name = self.cls_root + words[0]
+	for line in lines:
+	    words = line.split()
+	    image_file_name = self.cls_root + words[0]
 	    im = cv2.imread(image_file_name)
 	    h,w,ch = im.shape
 	    if h!=self.im_shape or w!=self.im_shape:
 	        im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
-	        print "Reshape0"
 	    im = np.swapaxes(im, 0, 2)
 	    im -= self.mean
-	    # Load and prepare ground truth
             label    = int(words[1])
             roi      = int(words[2])
-            self.cls_cur += 1
-            return im, label, roi
-	if loss_task % 2 == 1:
-	    index = self.roi_list[self.roi_cur]  # Get the image index
-            words = index.split()
-            image_file_name = self.roi_root + words[0]
-            im = cv2.imread(image_file_name)
+	    self.cls_list.append([im,label,roi])
+	random.shuffle(self.cls_list)
+        self.cls_cur = 0
+	print str(len(self.cls_list))," Classify Data have been read into Memory..."
+
+	fid = open(roi_list,'r')
+        lines = fid.readlines()
+	fid.close()
+	for line in lines:
+	    words = line.split()
+	    image_file_name = self.roi_root + words[0]
+	    im = cv2.imread(image_file_name)
 	    h,w,ch = im.shape
 	    if h!=self.im_shape or w!=self.im_shape:
-		im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
-		print "Reshape1"
+	        im = cv2.resize(im,(int(self.im_shape),int(self.im_shape)))
 	    im = np.swapaxes(im, 0, 2)
 	    im -= self.mean
-	    # Load and prepare ground truth
             label    = int(words[1])
             roi      = int(words[2])
+	    self.roi_list.append([im,label,roi])
+	random.shuffle(self.roi_list)
+	self.roi_cur = 0 
+	print str(len(self.roi_list))," Regression Data have been read into Memory..."
+
+    def load_next_image(self,loss_task): 
+        if self.cls_cur == len(self.cls_list):
+            self.cls_cur = 0
+            random.shuffle(self.cls_list)
+	if loss_task % 2 == 0:
+            cur_data = self.cls_list[self.cls_cur]  # Get the image index
+	    im	     = cv2.flip(cur_data[0],random.choice([-1,0,1]))
+            label    = cur_data[1]
+            roi      = cur_data[2]
+            self.cls_cur += 1
+            return im, label, roi
+
+	if self.roi_cur == len(self.roi_list):
+            self.roi_cur = 0
+            random.shuffle(self.roi_list)
+	if loss_task % 2 == 1:
+	    cur_data = self.roi_list[self.roi_cur]  # Get the image index
+	    im	     = cur_data[0]
+            label    = cur_data[1]
+            roi      = cur_data[2]
             self.roi_cur += 1
             return im, label, roi
+
 ################################################################################
 #########################ROI Loss Layer By Python###############################
 ################################################################################
