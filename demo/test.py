@@ -40,6 +40,8 @@ def detectFace(img_path,threshold):
         rectangle = tools.detect_face_12net(cls_prob,roi_prob,out_side,1/scales[i],origin_w,origin_h,threshold[0])
         rectangles.extend(rectangle)
     rectangles = tools.NMS(rectangles,0.3,'iou')
+    if len(rectangles)==0:
+        return rectangles
     net_24.blobs['data'].reshape(len(rectangles),3,24,24)
     crop_number = 0
     for rectangle in rectangles:
@@ -52,6 +54,8 @@ def detectFace(img_path,threshold):
     cls_prob = out['cls_score']
     roi_prob = out['roi_score']
     rectangles = tools.filter_face_24net(cls_prob,roi_prob,rectangles,origin_w,origin_h,threshold[1])
+    if len(rectangles)==0:
+        return rectangles
     net_48.blobs['data'].reshape(len(rectangles),3,48,48)
     crop_number = 0
     for rectangle in rectangles:
