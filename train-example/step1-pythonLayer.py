@@ -92,7 +92,7 @@ class BatchLoader(object):
             roi      = cur_data[2]
             self.cls_cur += 1
             return im, label, roi
-    '''
+    	'''
 	if self.roi_cur == len(self.roi_list):
             self.roi_cur = 0
             random.shuffle(self.roi_list)
