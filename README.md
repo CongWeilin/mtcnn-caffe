@@ -9,7 +9,7 @@ Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neura
 ### Train Data
 The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVmaIR9)
 
-### 
+### Net
 The main idea is block backward propagate for different task
 
 12net
