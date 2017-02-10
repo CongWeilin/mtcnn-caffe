@@ -70,7 +70,7 @@ class BatchLoader(object):
 	random.shuffle(self.cls_list)
         self.cls_cur = 0
 	print str(len(self.cls_list))," Classify Data have been read into Memory..."
-	
+
 	fid = open(roi_list,'r')
         lines = fid.readlines()
 	fid.close()
@@ -86,7 +86,7 @@ class BatchLoader(object):
             label    = int(words[1])
             roi      = (float(words[2]),float(words[3]),float(words[4]),float(words[5]))
 	    pts	     = (float(words[6]),float(words[7]),float(words[8]),float(words[9]),float(words[10]),float(words[11]),float(words[12]),float(words[13]),float(words[14]),float(words[15]))
-	    self.cls_list.append([im,label,roi,pts])
+	    self.roi_list.append([im,label,roi,pts])
 	random.shuffle(self.roi_list)
 	self.roi_cur = 0 
 	print str(len(self.roi_list))," Regression Data have been read into Memory..."
@@ -106,18 +106,18 @@ class BatchLoader(object):
             label    = int(words[1])
             roi      = (float(words[2]),float(words[3]),float(words[4]),float(words[5]))
 	    pts	     = (float(words[6]),float(words[7]),float(words[8]),float(words[9]),float(words[10]),float(words[11]),float(words[12]),float(words[13]),float(words[14]),float(words[15]))
-	    self.pts__list.append([im,label,roi,pts])
+	    self.pts_list.append([im,label,roi,pts])
 	random.shuffle(self.pts_list)
 	self.pts_cur = 0 
-	print str(len(self.pts_list))," Regression Data have been read into Memory..."
+	print str(len(self.pts_list))," Landmark Data have been read into Memory..."
 
     def load_next_image(self,loss_task):
         if self.cls_cur == len(self.cls_list):
             self.cls_cur = 0
             random.shuffle(self.cls_list)
-	if loss_task % 1 == 0:
+	if loss_task % 3 == 0:
             cur_data = self.cls_list[self.cls_cur]  # Get the image index
-	    im	     = cur_data[0]
+	    im	     = cv2.flip(cur_data[0],random.choice([-1,0,1]))
             label    = cur_data[1]
             roi      = cur_data[2]
 	    pts	     = cur_data[3]
@@ -127,8 +127,8 @@ class BatchLoader(object):
         if self.roi_cur == len(self.roi_list):
             self.roi_cur = 0
             random.shuffle(self.roi_list)
-	if loss_task % 2 == 1:
-            roi_data = self.roi_list[self.roi_cur]  # Get the image index
+	if loss_task % 3 == 1:
+            cur_data = self.roi_list[self.roi_cur]  # Get the image index
 	    im	     = cur_data[0]
             label    = cur_data[1]
             roi      = cur_data[2]
@@ -140,7 +140,7 @@ class BatchLoader(object):
             self.pts_cur = 0
             random.shuffle(self.pts_list)
 	if loss_task % 3 == 2:
-            pts_data = self.pts_list[self.pts_cur]  # Get the image index
+            cur_data = self.pts_list[self.pts_cur]  # Get the image index
 	    im	     = cur_data[0]
             label    = cur_data[1]
             roi      = cur_data[2]
