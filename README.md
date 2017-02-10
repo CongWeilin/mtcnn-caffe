@@ -7,7 +7,7 @@ Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neura
 2. opencv && cv2 && numpy
 
 ### Train Data
-The train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVmaIR9)
+The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVmaIR9)
 
 ### 
 12net
