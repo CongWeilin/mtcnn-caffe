@@ -1,6 +1,5 @@
 import sys
 sys.path.append('/home/congweilin/caffe/python')
-#sys.path.append('/usr/local/lib/python2.7/site-packages')
 sys.path.append('/usr/lib/python2.7/dist-packages')
 import cv2
 import caffe
@@ -93,7 +92,7 @@ class BatchLoader(object):
             roi      = cur_data[2]
             self.cls_cur += 1
             return im, label, roi
-	‘’’
+	'''
 	if self.roi_cur == len(self.roi_list):
             self.roi_cur = 0
             random.shuffle(self.roi_list)
@@ -104,7 +103,7 @@ class BatchLoader(object):
             roi      = cur_data[2]
             self.roi_cur += 1
             return im, label, roi
-	‘’’
+	'''
 ################################################################################
 #########################ROI Loss Layer By Python###############################
 ################################################################################
