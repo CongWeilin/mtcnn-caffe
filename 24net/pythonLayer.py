@@ -88,12 +88,12 @@ class BatchLoader(object):
             random.shuffle(self.cls_list)
 	if loss_task % 2 == 0:
             cur_data = self.cls_list[self.cls_cur]  # Get the image index
-	    im	     = cur_data[0]
+	    im	     = cv2.flip(cur_data[0],random.choice([-1,0,1]))
             label    = cur_data[1]
             roi      = cur_data[2]
             self.cls_cur += 1
             return im, label, roi
-	
+
 	if self.roi_cur == len(self.roi_list):
             self.roi_cur = 0
             random.shuffle(self.roi_list)
