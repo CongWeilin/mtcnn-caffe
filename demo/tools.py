@@ -1,24 +1,7 @@
 import sys
-sys.path.append('/usr/lib/python2.7/dist-packages')
 from operator import itemgetter
 import numpy as np
 import cv2
-'''
-Function:
-	This trans_map is used for bounding box calibration on 12net and 24net
-'''
-s_change = [ 0.83, 1.0, 1.21]
-x_change = [-0.17, 0.0, 0.17]
-y_change = [-0.17, 0.0, 0.17]
-trans_map = np.zeros((27,3))
-label = 0
-for s in s_change:
-    for x in x_change:
-        for y in y_change:
-            trans_map[label][0] = s
-            trans_map[label][1] = x
-            trans_map[label][2] = y
-            label += 1
 '''
 Function:
 	calculate Intersect of Union
@@ -105,16 +88,14 @@ Function:
 	Detect face position and calibrate bounding box on 12net feature map
 Input:
 	cls_prob : softmax feature map for face classify
-	roi_prob : feature map for regression
+	roi      : feature map for regression
 	out_side : feature map's largest size
 	scale    : current input image scale in multi-scales
 	width    : image's origin width
 	height   : image's origin height
-	threshold: 0.6 can have 99% recall rate on CelebA-database
-Output:
-	rectangles: possible face positions
+	threshold: 0.6 can have 99% recall rate
 '''
-def detect_face_12net(cls_prob,roi_prob,out_side,scale,width,height,threshold):
+def detect_face_12net(cls_prob,roi,out_side,scale,width,height,threshold):
     in_side = 2*out_side+11
     stride = 0
     if out_side != 1:
@@ -126,80 +107,44 @@ def detect_face_12net(cls_prob,roi_prob,out_side,scale,width,height,threshold):
             original_y1 = int(stride * y * scale)
             original_w  = int(12.0 * scale)
             original_h  = int(12.0 * scale)
-            s_change = 0
-            x_change = 0
-            y_change = 0
-	    change_number = 0
-            for label in range(0,27):
-		if roi_prob[label][x][y]>0.2:
-            	    #give Rect maltiple change
-		    change_number += 1
-            	    s_change += trans_map[label][0]
-            	    x_change += trans_map[label][1]
-           	    y_change += trans_map[label][2]
-	    if change_number == 0:
-		roi = [original_x1,original_y1,original_x1+original_w,original_y1+original_h,prob]
-                boundingBox.append(roi)
-		continue
-	    s_change = s_change/change_number
-	    x_change = x_change/change_number
-	    y_change = y_change/change_number
-            #put the change into image
-            x1 = int(max(0, original_x1 + original_w * x_change))
-            y1 = int(max(0, original_y1 + original_h * y_change))
-            x2 = int(min(width , x1 + original_w * s_change))
-            y2 = int(min(height, y1 + original_h * s_change))
-            roi = [x1,y1,x2,y2,prob]
-            boundingBox.append(roi)
-    return boundingBox
+            original_x2 = original_x1 + original_w
+            original_y2 = original_y1 + original_h
+            rect = []
+            x1 = int(round(max(0     , original_x1 + original_w * roi[0][x][y])))
+            y1 = int(round(max(0     , original_y1 + original_h * roi[1][x][y])))
+            x2 = int(round(min(width , original_x2 + original_w * roi[2][x][y])))
+            y2 = int(round(min(height, original_y2 + original_h * roi[3][x][y])))
+	    if x2>x1 and y2>y1:
+                rect = [x1,y1,x2,y2,prob]
+                boundingBox.append(rect)
+    return NMS(boundingBox,0.3,'iou')
 '''
 Function:
 	Filter face position and calibrate bounding box on 12net's output
 Input:
 	cls_prob  : softmax feature map for face classify
 	roi_prob  : feature map for regression
-	rectangles: 12net's predict, rectangles[i][0:3] is the position, rectangles[i][4] is score, rectangles[i][5] is scale
+	rectangles: 12net's predict
 	width     : image's origin width
 	height    : image's origin height
-	threshold : 0.6 can have 97% recall rate on CelebA-database
+	threshold : 0.6 can have 97% recall rate
 Output:
 	rectangles: possible face positions
 '''
-def filter_face_24net(cls_prob,roi_prob,rectangles,width,height,threshold):
+def filter_face_24net(cls_prob,roi,rectangles,width,height,threshold):
     boundingBox = []
     rect_num = len(rectangles)
     for i in range(rect_num):
 	if cls_prob[i][1]>threshold:
-	    rectangles[i][4] = cls_prob[i][1] # update score
-	    indices = np.nonzero(roi_prob[i]>0.2)[0]
-	    number_of_cals = len(indices)
-	    if number_of_cals == 0:
-		boundingBox.append(rectangles[i])
-		continue
-	    
-	    s_change = 0
-            x_change = 0
-            y_change = 0
-            for label in indices:
-                #give Rect maltiple change
-                s_change += trans_map[label][0]
-                x_change += trans_map[label][1]
-                y_change += trans_map[label][2]
-            s_change = s_change/number_of_cals
-            x_change = x_change/number_of_cals
-            y_change = y_change/number_of_cals
-	    original_x1 = int(rectangles[i][0])
-            original_y1 = int(rectangles[i][1])
-            original_x2 = int(rectangles[i][2])
-            original_y2 = int(rectangles[i][3])
-            original_w = original_x2 - original_x1
-            original_h = original_y2 - original_y1
-	    rectangles[i][0] = int(max(0, original_x1 + original_w * x_change))
-            rectangles[i][1] = int(max(0, original_y1 + original_h * y_change))
-            rectangles[i][2] = int(min(width , rectangles[i][0] + original_w * s_change))
-            rectangles[i][3] = int(min(height, rectangles[i][1] + original_h * s_change))
-	    boundingBox.append(rectangles[i])
-
+	    original_w = rectangles[i][2]-rectangles[i][0]
+	    original_h = rectangles[i][3]-rectangles[i][1]
+	    x1 = int(round(max(0     , rectangles[i][0] + original_w * roi[i][0])))
+            y1 = int(round(max(0     , rectangles[i][1] + original_h * roi[i][1])))
+            x2 = int(round(min(width , rectangles[i][2] + original_w * roi[i][2])))
+            y2 = int(round(min(height, rectangles[i][3] + original_h * roi[i][3])))
+	    if x2>x1 and y2>y1:
+	        rect = [x1,y1,x2,y2,cls_prob[i][1]]
+	        boundingBox.append(rect)
     return NMS(boundingBox,0.3,'iou')
 '''
 Function:
@@ -216,14 +161,13 @@ Output:
 	rectangles: face positions and landmarks
 '''
 def filter_face_48net(cls_prob,roi,pts,rectangles,width,height,threshold):
-   
     boundingBox = []
     rect_num = len(rectangles)
     for i in range(rect_num):
 	if cls_prob[i][1]>threshold:
-	    rect = [rectangles[i][0],rectangles[i][1],rectangles[i][2],rectangles[i][3],rectangles[i][4],
+	    rect = [rectangles[i][0],rectangles[i][1],rectangles[i][2],rectangles[i][3],cls_prob[i][1],
 		   roi[i][0],roi[i][1],roi[i][2],roi[i][3],
-		   pts[i][0],pts[i][1],pts[i][2],pts[i][3],pts[i][4],pts[i][5],pts[i][6],pts[i][7],pts[i][8],pts[i][9],cls_prob[i][1]]
+		   pts[i][0],pts[i][1],pts[i][2],pts[i][3],pts[i][4],pts[i][5],pts[i][6],pts[i][7],pts[i][8],pts[i][9]]
 
 	    boundingBox.append(rect)
     rectangles = NMS(boundingBox,0.3,'iom')
@@ -231,23 +175,26 @@ def filter_face_48net(cls_prob,roi,pts,rectangles,width,height,threshold):
     for rectangle in rectangles:
 	roi_w = rectangle[2]-rectangle[0]
 	roi_h = rectangle[3]-rectangle[1]
+	cen_w = roi_w/2.0
+	cen_h = roi_h/2.0
 	x1 = rectangle[0]-rectangle[5]*roi_w
 	y1 = rectangle[1]-rectangle[6]*roi_h
 	x2 = rectangle[2]-rectangle[7]*roi_w
 	y2 = rectangle[3]-rectangle[8]*roi_h
-	pt0 = rectangle[ 9]*roi_w + rectangle[0]
-	pt1 = rectangle[10]*roi_h + rectangle[1]
-	pt2 = rectangle[11]*roi_w + rectangle[0]
-	pt3 = rectangle[12]*roi_h + rectangle[1]
-	pt4 = rectangle[13]*roi_w + rectangle[0]
-	pt5 = rectangle[14]*roi_h + rectangle[1]
-	pt6 = rectangle[15]*roi_w + rectangle[0]
-	pt7 = rectangle[16]*roi_h + rectangle[1]
-	pt8 = rectangle[17]*roi_w + rectangle[0]
-	pt9 = rectangle[18]*roi_h + rectangle[1]
-	score = rectangle[19]
-	rect.append([x1,y1,x2,y2,pt0,pt1,pt2,pt3,pt4,pt5,pt6,pt7,pt8,pt9,score])
-
+	pt0 = (rectangle[ 9]+1)*cen_w + rectangle[0]
+	pt1 = (rectangle[10]+1)*cen_h + rectangle[1]
+	pt2 = (rectangle[11]+1)*cen_w + rectangle[0]
+	pt3 = (rectangle[12]+1)*cen_h + rectangle[1]
+	pt4 = (rectangle[13]+1)*cen_w + rectangle[0]
+	pt5 = (rectangle[14]+1)*cen_h + rectangle[1]
+	pt6 = (rectangle[15]+1)*cen_w + rectangle[0]
+	pt7 = (rectangle[16]+1)*cen_h + rectangle[1]
+	pt8 = (rectangle[17]+1)*cen_w + rectangle[0]
+	pt9 = (rectangle[18]+1)*cen_h + rectangle[1]
+	score = rectangle[4]
+	rect_ = np.round([x1,y1,x2,y2,pt0,pt1,pt2,pt3,pt4,pt5,pt6,pt7,pt8,pt9]).astype(int)
+	rect_.append(score)
+	rect.append(rect_)
     return rect
 '''
 Function:
