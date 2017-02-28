@@ -5,10 +5,10 @@ momentum: 0.9
 weight_decay: 0.004
 # The learning rate policy
 lr_policy: "step"
-stepsize: 10000
+stepsize: 30000
 gamma: 0.8
-display: 499   #500
-max_iter: 100000
+display: 1000   #500
+max_iter: 500000
 snapshot: 10000
 snapshot_prefix: "./models/"
 solver_mode: GPU
