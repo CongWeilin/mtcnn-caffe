@@ -1,5 +1,6 @@
 # mtcnn-caffe
-Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neural Networks.
+Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neural Networks.<br/>
+The final result will be update in two days. It will contain FDDB result and all new models.
 
 ### Requirement
 0. ubuntu
@@ -7,7 +8,7 @@ Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neura
 2. opencv && cv2 && numpy
 
 ### Train Data
-The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVNVGfd), code is 'ujuv'
+The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVNVGfd), password is 'ujuv'<br/>
 The training data generate process can refer to [Seanlinx/mtcnn](https://github.com/Seanlinx/mtcnn)
 
 ### Net
