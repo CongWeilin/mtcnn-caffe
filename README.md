@@ -1,23 +1,31 @@
 # mtcnn-caffe
-Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neural Networks.<br/>
-The final result will be update in two days. It will contain FDDB result and all new models.<br/>
+Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neural Networks.
+
+The final result will be update in two days. It will contain FDDB result and all new models.
+
 48net is waiting for more training process and will update before 2017/3/2.
 
-### Requirement
+## Requirement
 0. Ubuntu 14.04 or 16.04
 1. caffe && pycaffe: [https://github.com/BVLC/caffe](https://github.com/BVLC/caffe)
 2. cPickle && cv2 && numpy 
 
-### Train Data
-The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVNVGfd), password is 'ujuv'<br/>
-The training data generate process can refer to [Seanlinx/mtcnn](https://github.com/Seanlinx/mtcnn)<br/>
-Sample almost similar to Seanlinx's can be found in `prepare_data`<br/>
-step1. Download Wider Face Training part only from Official Website and unzip to replace `WIDER_train`<br/>
-step2. Run `gen_12net_data.py` to generate 12net training data. Besides, `gen_net_imdb.py` provide you an example to build imdb, Remember changing and adding new params.<br/>
-step3. Run `gen_12net_hard_example.py` to generate hard sample. Run `gen_24net_data.py`. Combine these output and generate imdb.<br/>
-step4. Similar to last step, Run `gen_24net_hard_example.py` to generate hard sample. Run `gen_48net_data.py`. Combine these output and generate imdb. <br/>
+## Train Data
+The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVNVGfd), password is 'ujuv'
 
-### Net
+The training data generate process can refer to [Seanlinx/mtcnn](https://github.com/Seanlinx/mtcnn)
+
+Sample almost similar to Seanlinx's can be found in `prepare_data`
+
+- step1. Download Wider Face Training part only from Official Website and unzip to replace `WIDER_train`
+
+- step2. Run `gen_12net_data.py` to generate 12net training data. Besides, `gen_net_imdb.py` provide you an example to build imdb, Remember changing and adding new params.
+
+- step3. Run `gen_12net_hard_example.py` to generate hard sample. Run `gen_24net_data.py`. Combine these output and generate imdb.
+
+- step4. Similar to last step, Run `gen_24net_hard_example.py` to generate hard sample. Run `gen_48net_data.py`. Combine these output and generate imdb. 
+
+## Net
 The main idea is block backward propagation for different task
 
 12net
@@ -27,7 +35,7 @@ The main idea is block backward propagation for different task
 48net
 ![48net](https://github.com/CongWeilin/mtcnn-caffe/blob/master/48net/train48.png)
 
-### Questions
+## Questions
 The Q&A bellow can solve most of your problem.
 
 Q1: What data base do you use?<br/>
@@ -51,6 +59,7 @@ A6: If you input a (X,X) image, the output Y = (X-11)/2. Every point on output r
 Q7: What is roi(cls/pts).imdb used for?<br/>
 A7: Use imdb can feed training data into training net faster. Instead of random search data from the hard-disk, reading data from a large file once to memory will save you a lot of time. `imdb` was created by python module-cPickle.
 
-### Current Status
-2017/3/1<br/>
+## Current Status
+2017/3/1
+
  Different to offical paper, adding Landmark regression into each net make the model less accurate. I am trying to figure out the reason and make the model a better result.
