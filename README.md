@@ -10,7 +10,12 @@ The final result will be update in two days. It will contain FDDB result and all
 
 ### Train Data
 The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVNVGfd), password is 'ujuv'<br/>
-The training data generate process can refer to [Seanlinx/mtcnn](https://github.com/Seanlinx/mtcnn)
+The training data generate process can refer to [Seanlinx/mtcnn](https://github.com/Seanlinx/mtcnn)<br/>
+Sample almost similar to Seanlinx's can be found in `prepare_data`<br/>
+step1. Download Wider Face Training part only from Official Website and unzip to replace `WIDER_train`<br/>
+step2. Run `gen_12net_data.py` to generate 12net training data. Besides, `gen_net_imdb.py` provide you an example to build imdb, Remember changing and adding new params.<br/>
+step3. Run `gen_12net_hard_example.py` to generate hard sample. Run `gen_24net_data.py`. Combine these output and generate imdb.<br/>
+step4. Similar to last step, Run `gen_24net_hard_example.py` to generate hard sample. Run `gen_48net_data.py`. Combine these output and generate imdb. <br/>
 
 ### Net
 The main idea is block backward propagation for different task
