@@ -1,11 +1,12 @@
 # mtcnn-caffe
 Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neural Networks.<br/>
-The final result will be update in two days. It will contain FDDB result and all new models.
+The final result will be update in two days. It will contain FDDB result and all new models.<br/>
+48net is waiting for more training process and will update before 2017/3/2.
 
 ### Requirement
-0. ubuntu
+0. Ubuntu 14.04 or 16.04
 1. caffe && pycaffe: [https://github.com/BVLC/caffe](https://github.com/BVLC/caffe)
-2. opencv && cv2 && numpy
+2. cPickle && cv2 && numpy 
 
 ### Train Data
 The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVNVGfd), password is 'ujuv'<br/>
@@ -40,5 +41,10 @@ Q5: Ratio positive/negative samples for 12net?<br/>
 A5: This caffemodel used neg:pos=3:1. Because 12net's function is to eliminate negative answers, similar to exclusive method, we should learn more about negative elininate the wrong answer.
 
 Q6: Why your stride is different to official?<br/>
-A6: If you input a X*X image, the output Y = (X-11)/2. Every point on output represent a ROI on input. The ROI's left side moving range = (0, X-12) on input, and (0, Y-1) on output. So that stride = (X-12)/(Y-1) ≈≈ 2 in this net
+A6: If you input a (X,X) image, the output Y = (X-11)/2. Every point on output represent a ROI on input. The ROI's left side moving range = (0, X-12) on input, and (0, Y-1) on output. So that stride = (X-12)/(Y-1) ≈≈ 2 in this net.
 
+Q7: What is roi(cls/pts).imdb used for?<br/>
+A7: Use imdb can feed training data into training net faster. Instead of random search data from the hard-disk, reading data from a large file once to memory will save you a lot of time. `imdb` was created by python module-cPickle.
+
+### Current Status
+2017/3/1 Different to offical paper, adding Landmark regression into each net make the model less accurate. I am trying to figure out the reason and make the model a better result.
