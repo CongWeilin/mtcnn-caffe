@@ -1,9 +1,9 @@
-name: "face_12c"
+name: "face_24"
 input: "data"
 input_dim: 1
 input_dim: 3
-input_dim: 12
-input_dim: 12
+input_dim: 24
+input_dim: 24
 layer {
   name: "conv1"
   type: "Convolution"
@@ -16,7 +16,7 @@ layer {
     lr_mult: 2
   }
   convolution_param {
-    num_output: 10
+    num_output: 28
     kernel_size: 3
     weight_filler {
       type: "gaussian"
@@ -56,7 +56,7 @@ layer {
     lr_mult: 2
   }
   convolution_param {
-    num_output: 16
+    num_output: 48
     kernel_size: 3
     weight_filler {
       type: "gaussian"
@@ -74,9 +74,20 @@ layer {
   top: "conv2"
 }
 layer {
+  name: "pool2"
+  type: "Pooling"
+  bottom: "conv2"
+  top: "pool2"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
   name: "conv3"
   type: "Convolution"
-  bottom: "conv2"
+  bottom: "pool2"
   top: "conv3"
   param {
     lr_mult: 1
@@ -87,14 +98,14 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 32
-    kernel_size: 3
+    num_output: 64
+    kernel_size: 2
     stride: 1
      weight_filler {
-      type: "xavier"
+     type: "xavier"
     }
     bias_filler {
-	  type: "constant"
+      type: "constant"
       value: 0
     }
   }
@@ -106,10 +117,10 @@ layer {
   top: "conv3"
 }
 layer {
-  name: "conv4-1"
-  type: "Convolution"
+  name: "fc4"
+  type: "InnerProduct"
   bottom: "conv3"
-  top: "conv4-1"
+  top: "fc4"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -118,12 +129,32 @@ layer {
     lr_mult: 2
     decay_mult: 0
   }
-  convolution_param {
+  inner_product_param {
+    num_output: 128
+    weight_filler {
+     type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  name: "relu4"
+  type: "PReLU"
+  bottom: "fc4"
+  top: "fc4"
+}
+layer {
+  name: "fc5-1"
+  type: "InnerProduct"
+  bottom: "fc4"
+  top: "fc5-1"
+  inner_product_param {
     num_output: 2
-    kernel_size: 1
-    stride: 1
-     weight_filler {
-      type: "xavier"
+    weight_filler {
+     type: "xavier"
     }
     bias_filler {
       type: "constant"
@@ -134,29 +165,19 @@ layer {
 layer {
   name: "cls_score"
   type: "Softmax"
-  bottom: "conv4-1"
+  bottom: "fc5-1"
   top: "cls_score"
 }
 layer {
-  name: "conv4-2"
-  type: "Convolution"
-  bottom: "conv3"
-  top: "conv4-2"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  convolution_param {
+  name: "fc5-2"
+  type: "InnerProduct"
+  bottom: "fc4"
+  top: "fc5-2"
+  inner_product_param {
     num_output: 4
-    kernel_size: 1
-    stride: 1
-     weight_filler {
-      type: "xavier"
-	}
+    weight_filler {
+     type: "xavier"
+    }
     bias_filler {
       type: "constant"
       value: 0

@@ -57,15 +57,33 @@ def detectFace(img_path,threshold):
     cls_prob = out['cls_score']
     roi_prob = out['fc5-2']
     rectangles = tools.filter_face_24net(cls_prob,roi_prob,rectangles,origin_w,origin_h,threshold[1])
+
+    if len(rectangles)==0:
+        return rectangles
+    net_48.blobs['data'].reshape(len(rectangles),3,48,48)
+    crop_number = 0
+    for rectangle in rectangles:
+        crop_img = caffe_img[rectangle[1]:rectangle[3], rectangle[0]:rectangle[2]]
+        scale_img = cv2.resize(crop_img,(48,48))
+        scale_img = np.swapaxes(scale_img, 0, 2)
+        net_48.blobs['data'].data[crop_number] =scale_img 
+        crop_number += 1
+    out = net_48.forward()
+    cls_prob = out['cls_score']
+    roi = out['roi']
+    pts = out['pts']
+    rectangles = tools.filter_face_48net(cls_prob,roi,pts,rectangles,origin_w,origin_h,threshold[2])
+
     return rectangles
 
 
-threshold = [0.6,0.6,0.3]
-imgpath = ""
+threshold = [0.6,0.7,0.2]
+imgpath = "/home/cmcc/caffe-master/examples/mtcnn-caffe/12net/12/WIDER_train/images/7--Cheering/7_Cheering_Cheering_7_16.jpg"
 rectangles = detectFace(imgpath,threshold)
 img = cv2.imread(imgpath)
 draw = img.copy()
 for rectangle in rectangles:
+    #cv2.putText(draw,str(rectangle[14]),(int(rectangle[0]),int(rectangle[1])),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0))
     cv2.rectangle(draw,(int(rectangle[0]),int(rectangle[1])),(int(rectangle[2]),int(rectangle[3])),(255,0,0),1)
 cv2.imshow("24net",draw)
 cv2.waitKey()
