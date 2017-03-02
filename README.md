@@ -3,7 +3,8 @@ Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Neura
 
 The final result will be update in two days. It will contain FDDB result and all new models.
 
-48net is waiting for more training process and will update before 2017/3/2.
+![result](https://github.com/CongWeilin/mtcnn-caffe/blob/master/demo/test1.png)
+![result](https://github.com/CongWeilin/mtcnn-caffe/blob/master/demo/test3.png)
 
 ## Requirement
 0. Ubuntu 14.04 or 16.04
