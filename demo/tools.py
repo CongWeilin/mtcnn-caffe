@@ -193,7 +193,7 @@ def filter_face_48net(cls_prob,roi,pts,rectangles,width,height,threshold):
 	pt9 = rectangle[18]*roi_h + rectangle[1] -1
 	score = rectangle[4]
 	rect_ = np.round([x1,y1,x2,y2,pt0,pt1,pt2,pt3,pt4,pt5,pt6,pt7,pt8,pt9]).astype(int)
-	#rect_.append(score)
+	rect_= np.append(rect_,score)
 	rect.append(rect_)
     return rect
 '''

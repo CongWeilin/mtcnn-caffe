@@ -77,20 +77,19 @@ def detectFace(img_path,threshold):
     rectangles = tools.filter_face_48net(cls_prob,roi_prob,pts_prob,rectangles,origin_w,origin_h,threshold[2])
     return rectangles
 
-threshold = [0.5,0.7,0.7]
-imgpath = "/home/cmcc/mtcnn-caffe/demo/timg.jpeg"
+threshold = [0.6,0.7,0.7]
+imgpath = ""
 rectangles = detectFace(imgpath,threshold)
 img = cv2.imread(imgpath)
 draw = img.copy()
 print len(rectangles)
 for rectangle in rectangles:
     print rectangle
-    #cv2.putText(draw,str(rectangle[14]),(int(rectangle[0]),int(rectangle[1])),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0))
+    cv2.putText(draw,str(rectangle[14]),(int(rectangle[0]),int(rectangle[1])),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0))
     cv2.rectangle(draw,(int(rectangle[0]),int(rectangle[1])),(int(rectangle[2]),int(rectangle[3])),(255,0,0),1)
     for i in range(4,14,2):
     	cv2.circle(draw,(int(rectangle[i+0]),int(rectangle[i+1])),2,(0,255,0))
-#cv2.imshow("test",draw)
-#cv2.waitKey()
-cv2.imwrite('test1.png',draw)
+cv2.imshow("test",draw)
+cv2.waitKey()
 
 
