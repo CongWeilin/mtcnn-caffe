@@ -59,6 +59,6 @@ Q7: What is roi(cls/pts).imdb used for?<br/>
 A7: Use imdb can feed training data into training net faster. Instead of random search data from the hard-disk, reading data from a large file once to memory will save you a lot of time. `imdb` was created by python module-cPickle.
 
 ## Current Status
-2017/3/2
+CongWeilin updated in 2017/3/2
 
 Update result, waiting for FDDB result
