@@ -101,12 +101,13 @@ def detect_face_12net(cls_prob,roi,out_side,scale,width,height,threshold):
     if out_side != 1:
         stride = float(in_side-12)/(out_side-1)
     boundingBox = []
+
     for (x,y), prob in np.ndenumerate(cls_prob):
         if(prob >= threshold):
-            original_x1 = int(stride * x * scale)
-            original_y1 = int(stride * y * scale)
-            original_w  = int(12.0 * scale)
-            original_h  = int(12.0 * scale)
+            original_x1 = int((stride*x + 1)*scale)
+            original_y1 = int((stride*y + 1)*scale)
+            original_w  = int((12.0 -1)*scale)
+            original_h  = int((12.0 -1)*scale)
             original_x2 = original_x1 + original_w
             original_y2 = original_y1 + original_h
             rect = []
@@ -117,7 +118,7 @@ def detect_face_12net(cls_prob,roi,out_side,scale,width,height,threshold):
 	    if x2>x1 and y2>y1:
                 rect = [x1,y1,x2,y2,prob]
                 boundingBox.append(rect)
-    return NMS(boundingBox,0.3,'iou')
+    return NMS(boundingBox,0.5,'iou')
 '''
 Function:
 	Filter face position and calibrate bounding box on 12net's output
@@ -136,8 +137,8 @@ def filter_face_24net(cls_prob,roi,rectangles,width,height,threshold):
     rect_num = len(rectangles)
     for i in range(rect_num):
 	if cls_prob[i][1]>threshold:
-	    original_w = rectangles[i][2]-rectangles[i][0]
-	    original_h = rectangles[i][3]-rectangles[i][1]
+	    original_w = rectangles[i][2]-rectangles[i][0]+1
+	    original_h = rectangles[i][3]-rectangles[i][1]+1
 	    x1 = int(round(max(0     , rectangles[i][0] + original_w * roi[i][0])))
             y1 = int(round(max(0     , rectangles[i][1] + original_h * roi[i][1])))
             x2 = int(round(min(width , rectangles[i][2] + original_w * roi[i][2])))
@@ -145,7 +146,7 @@ def filter_face_24net(cls_prob,roi,rectangles,width,height,threshold):
 	    if x2>x1 and y2>y1:
 	        rect = [x1,y1,x2,y2,cls_prob[i][1]]
 	        boundingBox.append(rect)
-    return NMS(boundingBox,0.3,'iou')
+    return NMS(boundingBox,0.7,'iou')
 '''
 Function:
 	Filter face position and calibrate bounding box on 12net's output
@@ -167,29 +168,29 @@ def filter_face_48net(cls_prob,roi,pts,rectangles,width,height,threshold):
 	if cls_prob[i][1]>threshold:
 	    rect = [rectangles[i][0],rectangles[i][1],rectangles[i][2],rectangles[i][3],cls_prob[i][1],
 		   roi[i][0],roi[i][1],roi[i][2],roi[i][3],
-		   pts[i][0],pts[i][1],pts[i][2],pts[i][3],pts[i][4],pts[i][5],pts[i][6],pts[i][7],pts[i][8],pts[i][9]]
+		   pts[i][0],pts[i][5],pts[i][1],pts[i][6],pts[i][2],pts[i][7],pts[i][3],pts[i][8],pts[i][4],pts[i][9]]
 	    boundingBox.append(rect)
-    rectangles = NMS(boundingBox,0.3,'iom')
+    rectangles = NMS(boundingBox,0.7,'iom')
     rect = []
+    
     for rectangle in rectangles:
-	roi_w = rectangle[2]-rectangle[0]
-	roi_h = rectangle[3]-rectangle[1]
-	cen_w = roi_w/2.0
-	cen_h = roi_h/2.0
+	roi_w = rectangle[2]-rectangle[0]+1
+	roi_h = rectangle[3]-rectangle[1]+1
+
   	x1 = round(max(0     , rectangle[0]+rectangle[5]*roi_w))
         y1 = round(max(0     , rectangle[1]+rectangle[6]*roi_h))
         x2 = round(min(width , rectangle[2]+rectangle[7]*roi_w))
         y2 = round(min(height, rectangle[3]+rectangle[8]*roi_h))
-	pt0 = (rectangle[ 9]+1)*cen_w + rectangle[0]
-	pt1 = (rectangle[10]+1)*cen_h + rectangle[1]
-	pt2 = (rectangle[11]+1)*cen_w + rectangle[0]
-	pt3 = (rectangle[12]+1)*cen_h + rectangle[1]
-	pt4 = (rectangle[13]+1)*cen_w + rectangle[0]
-	pt5 = (rectangle[14]+1)*cen_h + rectangle[1]
-	pt6 = (rectangle[15]+1)*cen_w + rectangle[0]
-	pt7 = (rectangle[16]+1)*cen_h + rectangle[1]
-	pt8 = (rectangle[17]+1)*cen_w + rectangle[0]
-	pt9 = (rectangle[18]+1)*cen_h + rectangle[1]
+	pt0 = rectangle[ 9]*roi_w + rectangle[0] -1
+	pt1 = rectangle[10]*roi_h + rectangle[1] -1
+	pt2 = rectangle[11]*roi_w + rectangle[0] -1
+	pt3 = rectangle[12]*roi_h + rectangle[1] -1
+	pt4 = rectangle[13]*roi_w + rectangle[0] -1
+	pt5 = rectangle[14]*roi_h + rectangle[1] -1
+	pt6 = rectangle[15]*roi_w + rectangle[0] -1
+	pt7 = rectangle[16]*roi_h + rectangle[1] -1
+	pt8 = rectangle[17]*roi_w + rectangle[0] -1
+	pt9 = rectangle[18]*roi_h + rectangle[1] -1
 	score = rectangle[4]
 	rect_ = np.round([x1,y1,x2,y2,pt0,pt1,pt2,pt3,pt4,pt5,pt6,pt7,pt8,pt9]).astype(int)
 	#rect_.append(score)
@@ -206,12 +207,10 @@ Output:
 '''
 def calculateScales(img):
     caffe_img = img.copy()
-    pr_scale = 1.0
     h,w,ch = caffe_img.shape
-    if w > 1000 or h > 1000: #max side <= 1000
-        pr_scale = 1000.0/max(h,w)
-        w = int(w*pr_scale)
-        h = int(h*pr_scale)
+    pr_scale = 1000.0/max(h,w)
+    w = int(w*pr_scale)
+    h = int(h*pr_scale)
 
     #multi-scale
     scales = []

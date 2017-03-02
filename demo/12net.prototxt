@@ -1,9 +1,10 @@
-name: "face_12c"
+name: "12Net"
 input: "data"
 input_dim: 1
 input_dim: 3
 input_dim: 12
 input_dim: 12
+
 layer {
   name: "conv1"
   type: "Convolution"
@@ -11,24 +12,27 @@ layer {
   top: "conv1"
   param {
     lr_mult: 1
+    decay_mult: 1
   }
   param {
     lr_mult: 2
+    decay_mult: 0
   }
   convolution_param {
     num_output: 10
     kernel_size: 3
+    stride: 1
     weight_filler {
-      type: "gaussian"
-      std: 0.0001
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
+      value: 0
     }
   }
 }
 layer {
-  name: "relu1"
+  name: "PReLU1"
   type: "PReLU"
   bottom: "conv1"
   top: "conv1"
@@ -40,10 +44,11 @@ layer {
   top: "pool1"
   pooling_param {
     pool: MAX
-    kernel_size: 3
+    kernel_size: 2
     stride: 2
   }
 }
+
 layer {
   name: "conv2"
   type: "Convolution"
@@ -51,28 +56,32 @@ layer {
   top: "conv2"
   param {
     lr_mult: 1
+    decay_mult: 1
   }
   param {
     lr_mult: 2
+    decay_mult: 0
   }
   convolution_param {
     num_output: 16
     kernel_size: 3
-    weight_filler {
-      type: "gaussian"
-      std: 0.0001
+    stride: 1
+     weight_filler {
+      type: "xavier"
     }
     bias_filler {
       type: "constant"
+      value: 0
     }
   }
 }
 layer {
-  name: "relu2"
+  name: "PReLU2"
   type: "PReLU"
   bottom: "conv2"
   top: "conv2"
 }
+
 layer {
   name: "conv3"
   type: "Convolution"
@@ -100,11 +109,13 @@ layer {
   }
 }
 layer {
-  name: "relu3"
+  name: "PReLU3"
   type: "PReLU"
   bottom: "conv3"
   top: "conv3"
 }
+
+
 layer {
   name: "conv4-1"
   type: "Convolution"
@@ -131,12 +142,7 @@ layer {
     }
   }
 }
-layer {
-  name: "cls_score"
-  type: "Softmax"
-  bottom: "conv4-1"
-  top: "cls_score"
-}
+
 layer {
   name: "conv4-2"
   type: "Convolution"
@@ -162,4 +168,10 @@ layer {
       value: 0
     }
   }
+}
+layer {
+  name: "prob1"
+  type: "Softmax"
+  bottom: "conv4-1"
+  top: "prob1"
 }

@@ -1,24 +1,28 @@
-name: "48Net"
+name: "RNet"
 input: "data"
 input_dim: 1
 input_dim: 3
-input_dim: 48
-input_dim: 48
+input_dim: 24
+input_dim: 24
+
+
+##########################
+######################
 layer {
   name: "conv1"
   type: "Convolution"
   bottom: "data"
   top: "conv1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
-    lr_mult: 2
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   convolution_param {
-    num_output: 32
+    num_output: 28
     kernel_size: 3
     stride: 1
      weight_filler {
@@ -35,6 +39,7 @@ layer {
   type: "PReLU"
   bottom: "conv1"
   top: "conv1"
+  propagate_down: true
 }
 layer {
   name: "pool1"
@@ -47,24 +52,25 @@ layer {
     stride: 2
   }
 }
+
 layer {
   name: "conv2"
   type: "Convolution"
   bottom: "pool1"
   top: "conv2"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
-    lr_mult: 2
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   convolution_param {
-    num_output: 64
+    num_output: 48
     kernel_size: 3
     stride: 1
-     weight_filler {
+    weight_filler {
       type: "xavier"
 	}
     bias_filler {
@@ -73,12 +79,12 @@ layer {
     }
   }
 }
-
 layer {
   name: "prelu2"
   type: "PReLU"
   bottom: "conv2"
   top: "conv2"
+  propagate_down: true
 }
 layer {
   name: "pool2"
@@ -91,23 +97,26 @@ layer {
     stride: 2
   }
 }
+####################################
 
+##################################
 layer {
   name: "conv3"
   type: "Convolution"
   bottom: "pool2"
   top: "conv3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
-    lr_mult: 2
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   convolution_param {
-	num_output: 64
-	kernel_size: 3
+    num_output: 64
+    kernel_size: 2
+    stride: 1
     weight_filler {
       type: "xavier"
 	}
@@ -122,34 +131,27 @@ layer {
   type: "PReLU"
   bottom: "conv3"
   top: "conv3"
+  propagate_down: true
 }
-layer {
-  name: "pool3"
-  type: "Pooling"
-  bottom: "conv3"
-  top: "pool3"
-  pooling_param {
-    pool: MAX
-    kernel_size: 2
-    stride: 2
-  }
-}
+###############################
+
+###############################
+
 layer {
   name: "conv4"
-  type: "Convolution"
-  bottom: "pool3"
+  type: "InnerProduct"
+  bottom: "conv3"
   top: "conv4"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
-    lr_mult: 2
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
-  convolution_param {
-	num_output: 128
-	kernel_size: 2
+  inner_product_param {
+    num_output: 128
     weight_filler {
       type: "xavier"
 	}
@@ -166,66 +168,23 @@ layer {
   top: "conv4"
 }
 
-
 layer {
-  name: "conv5"
+  name: "conv5-1"
   type: "InnerProduct"
   bottom: "conv4"
-  top: "conv5"
+  top: "conv5-1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   param {
-    lr_mult: 2
-    decay_mult: 1
+    lr_mult: 0
+    decay_mult: 0
   }
   inner_product_param {
-	#kernel_size: 3
-	num_output: 256
-    weight_filler {
-      type: "xavier"
-	}
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-
-layer {
-  name: "drop5"
-  type: "Dropout"
-  bottom: "conv5"
-  top: "conv5"
-  dropout_param {
-    dropout_ratio: 0.25
-  }
-}
-layer {
-  name: "prelu5"
-  type: "PReLU"
-  bottom: "conv5"
-  top: "conv5"
-}
-
-
-layer {
-  name: "conv6-1"
-  type: "InnerProduct"
-  bottom: "conv5"
-  top: "conv6-1"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 1
-  }
-  inner_product_param {
+    num_output: 2
     #kernel_size: 1
-	num_output: 2
+    #stride: 1
     weight_filler {
       type: "xavier"
 	}
@@ -236,10 +195,10 @@ layer {
   }
 }
 layer {
-  name: "conv6-2"
+  name: "conv5-2"
   type: "InnerProduct"
-  bottom: "conv5"
-  top: "conv6-2"
+  bottom: "conv4"
+  top: "conv5-2"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -249,34 +208,10 @@ layer {
     decay_mult: 1
   }
   inner_product_param {
-  	#kernel_size: 1
-	num_output: 4
-    weight_filler {
-      type: "xavier"
-	}
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "conv6-3"
-  type: "InnerProduct"
-  bottom: "conv5"
-  top: "conv6-3"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 1
-  }
-  inner_product_param {
-  	#kernel_size: 1
-	num_output: 10
-    weight_filler {
+    num_output: 4
+    #kernel_size: 1
+    #stride: 1
+     weight_filler {
       type: "xavier"
 	}
     bias_filler {
@@ -288,6 +223,6 @@ layer {
 layer {
   name: "prob1"
   type: "Softmax"
-  bottom: "conv6-1"
+  bottom: "conv5-1"
   top: "prob1"
 }

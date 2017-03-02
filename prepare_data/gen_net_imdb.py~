@@ -37,7 +37,7 @@ for line in pos2:
     if h!=48 or w!=48:
         im = cv2.resize(im,(48,48))
     im = np.swapaxes(im, 0, 2)
-    im = (im - 127.5)/127.5
+    im -= 128
     label    = 1
     roi      = [-1,-1,-1,-1]
     pts	     = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
@@ -57,7 +57,7 @@ for i in neg_keep:
     if h!=48 or w!=48:
         im = cv2.resize(im,(48,48))
     im = np.swapaxes(im, 0, 2)
-    im = (im - 127.5)/127.5
+    im -= 128
     label    = 0
     roi      = [-1,-1,-1,-1]
     pts	     = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
@@ -101,7 +101,7 @@ for line in pos2:
     if h!=48 or w!=48:
         im = cv2.resize(im,(48,48))
     im = np.swapaxes(im, 0, 2)
-    im = (im - 127.5)/127.5
+    im -= 128
     label    = -1
     roi      = [float(words[2]),float(words[3]),float(words[4]),float(words[5])]
     pts	     = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
