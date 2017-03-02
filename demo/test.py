@@ -20,7 +20,7 @@ net_48 = caffe.Net(deploy,caffemodel,caffe.TEST)
 
 def detectFace(img_path,threshold):
     img = cv2.imread(img_path)
-    caffe_img = (img.copy()-127.5)*0.0078125
+    caffe_img = (img.copy()-127.5)/127.5
     origin_h,origin_w,ch = caffe_img.shape
     scales = tools.calculateScales(img)
     out = []
