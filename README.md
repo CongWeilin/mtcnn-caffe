@@ -11,8 +11,6 @@ The final result will be update in two days. It will contain FDDB result and all
 2. cPickle && cv2 && numpy 
 
 ## Train Data
-The sample train data is upload to [Baidu Drive](https://pan.baidu.com/s/1kVNVGfd), password is 'ujuv'
-
 The training data generate process can refer to [Seanlinx/mtcnn](https://github.com/Seanlinx/mtcnn)
 
 Sample almost similar to Seanlinx's can be found in `prepare_data`
@@ -25,6 +23,7 @@ Sample almost similar to Seanlinx's can be found in `prepare_data`
 
 - step4. Similar to last step, Run `gen_24net_hard_example.py` to generate hard sample. Run `gen_48net_data.py`. Combine these output and generate imdb. 
 
+The sample training data of 12net and 24net is available( Too big for Baidu Drive to upload 48net) by sending [Email](cong_weilin@qq.com)
 ## Net
 The main idea is block backward propagation for different task
 
