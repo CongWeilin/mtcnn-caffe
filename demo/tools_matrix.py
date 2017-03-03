@@ -1,0 +1,177 @@
+import sys
+from operator import itemgetter
+import numpy as np
+import cv2
+
+'''
+Function:
+	apply NMS(non-maximum suppression) on ROIs in same scale(matrix version)
+Input:
+	rectangles: rectangles[i][0:3] is the position, rectangles[i][4] is score
+Output:
+	rectangles: same as input
+'''
+def NMS(rectangles,threshold,type):
+    if len(rectangles)==0:
+	return rectangles
+    boxes = np.array(rectangles)
+    x1 = boxes[:,0]
+    y1 = boxes[:,1]
+    x2 = boxes[:,2]
+    y2 = boxes[:,3]
+    s  = boxes[:,4]
+    area = np.multiply(x2-x1+1, y2-y1+1)
+    I = np.array(s.argsort())
+    pick = []
+    while len(I)>0:
+	xx1 = np.maximum(x1[I[-1]], x1[I[0:-1]]) #I[-1] have hightest prob score, I[0:-1]->others
+        yy1 = np.maximum(y1[I[-1]], y1[I[0:-1]])
+        xx2 = np.minimum(x2[I[-1]], x2[I[0:-1]])
+        yy2 = np.minimum(y2[I[-1]], y2[I[0:-1]])
+	w = np.maximum(0.0, xx2 - xx1 + 1)
+        h = np.maximum(0.0, yy2 - yy1 + 1)
+        inter = w * h
+	if type == 'iom':
+	    o = inter / np.minimum(area[I[-1]], area[I[0:-1]])
+	else:
+	    o = inter / (area[I[-1]] + area[I[0:-1]] - inter)
+	pick.append(I[-1])
+	I = I[np.where(o<=threshold)[0]]
+    result_rectangle = boxes[pick].tolist()
+    return result_rectangle
+'''
+Function:
+	Detect face position and calibrate bounding box on 12net feature map(matrix version)
+Input:
+	cls_prob : softmax feature map for face classify
+	roi      : feature map for regression
+	out_side : feature map's largest size
+	scale    : current input image scale in multi-scales
+	width    : image's origin width
+	height   : image's origin height
+	threshold: 0.6 can have 99% recall rate
+'''
+def detect_face_12net(cls_prob,roi,out_side,scale,width,height,threshold):
+    in_side = 2*out_side+11
+    stride = 0
+    if out_side != 1:
+        stride = float(in_side-12)/(out_side-1)
+    (x,y) = np.where(cls_prob>=threshold)
+    boundingbox = np.array([x,y]).T
+    bb1 = np.fix((stride * (boundingbox) + 1 ) / scale)
+    bb2 = np.fix((stride * (boundingbox) + 12) / scale)
+    boundingbox = np.concatenate((bb1,bb2),axis = 1)
+    dx1 = roi[0][x,y]
+    dx2 = roi[1][x,y]
+    dx3 = roi[2][x,y]
+    dx4 = roi[3][x,y]
+    score = np.array([cls_prob[x,y]]).T
+    offset = np.array([dx1,dx2,dx3,dx4]).T
+    boundingbox += offset * (12.0 -1)*scale
+    rectangles = np.concatenate((boundingbox,score),axis=1).tolist()
+    return NMS(rectangles,0.5,'iou')
+'''
+Function:
+	Filter face position and calibrate bounding box on 12net's output
+Input:
+	cls_prob  : softmax feature map for face classify
+	roi_prob  : feature map for regression
+	rectangles: 12net's predict
+	width     : image's origin width
+	height    : image's origin height
+	threshold : 0.6 can have 97% recall rate
+Output:
+	rectangles: possible face positions
+'''
+def filter_face_24net(cls_prob,roi,rectangles,width,height,threshold):
+    boundingBox = []
+    rect_num = len(rectangles)
+    for i in range(rect_num):
+	if cls_prob[i][1]>threshold:
+	    original_w = rectangles[i][2]-rectangles[i][0]+1
+	    original_h = rectangles[i][3]-rectangles[i][1]+1
+	    x1 = int(round(max(0     , rectangles[i][0] + original_w * roi[i][0])))
+            y1 = int(round(max(0     , rectangles[i][1] + original_h * roi[i][1])))
+            x2 = int(round(min(width , rectangles[i][2] + original_w * roi[i][2])))
+            y2 = int(round(min(height, rectangles[i][3] + original_h * roi[i][3])))
+	    if x2>x1 and y2>y1:
+	        rect = [x1,y1,x2,y2,cls_prob[i][1]]
+	        boundingBox.append(rect)
+    return NMS(boundingBox,0.7,'iou')
+'''
+Function:
+	Filter face position and calibrate bounding box on 12net's output
+Input:
+	cls_prob  : cls_prob[1] is face possibility
+	roi       : roi offset
+	pts       : 5 landmark
+	rectangles: 12net's predict, rectangles[i][0:3] is the position, rectangles[i][4] is score
+	width     : image's origin width
+	height    : image's origin height
+	threshold : 0.7 can have 94% recall rate on CelebA-database
+Output:
+	rectangles: face positions and landmarks
+'''
+def filter_face_48net(cls_prob,roi,pts,rectangles,width,height,threshold):
+    boundingBox = []
+    rect_num = len(rectangles)
+    for i in range(rect_num):
+	if cls_prob[i][1]>threshold:
+	    rect = [rectangles[i][0],rectangles[i][1],rectangles[i][2],rectangles[i][3],cls_prob[i][1],
+		   roi[i][0],roi[i][1],roi[i][2],roi[i][3],
+		   pts[i][0],pts[i][5],pts[i][1],pts[i][6],pts[i][2],pts[i][7],pts[i][3],pts[i][8],pts[i][4],pts[i][9]]
+	    boundingBox.append(rect)
+    rectangles = NMS(boundingBox,0.7,'iom')
+    rect = []
+    
+    for rectangle in rectangles:
+	roi_w = rectangle[2]-rectangle[0]+1
+	roi_h = rectangle[3]-rectangle[1]+1
+
+  	x1 = round(max(0     , rectangle[0]+rectangle[5]*roi_w))
+        y1 = round(max(0     , rectangle[1]+rectangle[6]*roi_h))
+        x2 = round(min(width , rectangle[2]+rectangle[7]*roi_w))
+        y2 = round(min(height, rectangle[3]+rectangle[8]*roi_h))
+	pt0 = rectangle[ 9]*roi_w + rectangle[0] -1
+	pt1 = rectangle[10]*roi_h + rectangle[1] -1
+	pt2 = rectangle[11]*roi_w + rectangle[0] -1
+	pt3 = rectangle[12]*roi_h + rectangle[1] -1
+	pt4 = rectangle[13]*roi_w + rectangle[0] -1
+	pt5 = rectangle[14]*roi_h + rectangle[1] -1
+	pt6 = rectangle[15]*roi_w + rectangle[0] -1
+	pt7 = rectangle[16]*roi_h + rectangle[1] -1
+	pt8 = rectangle[17]*roi_w + rectangle[0] -1
+	pt9 = rectangle[18]*roi_h + rectangle[1] -1
+	score = rectangle[4]
+	rect_ = np.round([x1,y1,x2,y2,pt0,pt1,pt2,pt3,pt4,pt5,pt6,pt7,pt8,pt9]).astype(int)
+	rect_= np.append(rect_,score)
+	rect.append(rect_)
+    return rect
+'''
+Function:
+	calculate multi-scale and limit the maxinum side to 1000 
+Input: 
+	img: original image
+Output:
+	pr_scale: limit the maxinum side to 1000, < 1.0
+	scales  : Multi-scale
+'''
+def calculateScales(img):
+    caffe_img = img.copy()
+    pr_scale = 1.0
+    h,w,ch = caffe_img.shape
+    if min(w,h)>1000: #max side <= 1000
+        pr_scale = 1000.0/min(h,w)
+        w = int(w*pr_scale)
+        h = int(h*pr_scale)
+
+    #multi-scale
+    scales = []
+    factor = 0.7937
+    factor_count = 0
+    minl = min(h,w)
+    while minl >= 12:
+        scales.append(pr_scale*pow(factor, factor_count))
+        minl *= factor
+        factor_count += 1
+    return scales
