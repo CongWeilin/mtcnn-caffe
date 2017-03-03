@@ -58,8 +58,8 @@ def detect_face_12net(cls_prob,roi,out_side,scale,width,height,threshold):
         stride = float(in_side-12)/(out_side-1)
     (x,y) = np.where(cls_prob>=threshold)
     boundingbox = np.array([x,y]).T
-    bb1 = np.fix((stride * (boundingbox) + 1 ) / scale)
-    bb2 = np.fix((stride * (boundingbox) + 12) / scale)
+    bb1 = np.fix((stride * (boundingbox) + 1 ) * scale)
+    bb2 = np.fix((stride * (boundingbox) + 12) * scale)
     boundingbox = np.concatenate((bb1,bb2),axis = 1)
     dx1 = roi[0][x,y]
     dx2 = roi[1][x,y]
@@ -67,9 +67,18 @@ def detect_face_12net(cls_prob,roi,out_side,scale,width,height,threshold):
     dx4 = roi[3][x,y]
     score = np.array([cls_prob[x,y]]).T
     offset = np.array([dx1,dx2,dx3,dx4]).T
-    boundingbox += offset * (12.0 -1)*scale
-    rectangles = np.concatenate((boundingbox,score),axis=1).tolist()
-    return NMS(rectangles,0.5,'iou')
+    boundingbox = boundingbox + offset*11.0*scale
+    rectangles = np.concatenate((boundingbox,score),axis=1)
+    pick = []
+    for i in range(len(rectangles)):
+	x1 = int(max(0     ,rectangles[i][0]))
+	y1 = int(max(0     ,rectangles[i][1]))
+	x2 = int(min(width ,rectangles[i][2]))
+	y2 = int(min(height,rectangles[i][3]))
+	sc = rectangles[i][4]
+	if x2>x1 and y2>y1:
+	    pick.append([x1,y1,x2,y2,sc])
+    return NMS(pick,0.5,'iou')
 '''
 Function:
 	Filter face position and calibrate bounding box on 12net's output
@@ -84,20 +93,36 @@ Output:
 	rectangles: possible face positions
 '''
 def filter_face_24net(cls_prob,roi,rectangles,width,height,threshold):
-    boundingBox = []
-    rect_num = len(rectangles)
-    for i in range(rect_num):
-	if cls_prob[i][1]>threshold:
-	    original_w = rectangles[i][2]-rectangles[i][0]+1
-	    original_h = rectangles[i][3]-rectangles[i][1]+1
-	    x1 = int(round(max(0     , rectangles[i][0] + original_w * roi[i][0])))
-            y1 = int(round(max(0     , rectangles[i][1] + original_h * roi[i][1])))
-            x2 = int(round(min(width , rectangles[i][2] + original_w * roi[i][2])))
-            y2 = int(round(min(height, rectangles[i][3] + original_h * roi[i][3])))
-	    if x2>x1 and y2>y1:
-	        rect = [x1,y1,x2,y2,cls_prob[i][1]]
-	        boundingBox.append(rect)
-    return NMS(boundingBox,0.7,'iou')
+    pick = np.where(cls_prob>=threshold)
+    rectangles = np.array(rectangles)
+    print cls_prob.shape,roi.shape,rectangles.shape,np.array(pick).shape
+    x1  = rectangles[pick,0]
+    y1  = rectangles[pick,1]
+    x2  = rectangles[pick,2]
+    y2  = rectangles[pick,3]
+    sc  = np.array([cls_prob[pick]]).T
+    dx1 = roi[pick,0]
+    dx2 = roi[pick,1]
+    dx3 = roi[pick,2]
+    dx4 = roi[pick,3]
+    w   = x2-x1
+    h   = y2-y1
+    x1  = np.array([(x1+dx1*w)[0]]).T
+    y1  = np.array([(y1+dx2*h)[0]]).T
+    x2  = np.array([(x2+dx3*w)[0]]).T
+    y2  = np.array([(y2+dx4*h)[0]]).T
+    print x1.shape,x2.shape,sc.shape
+    rectangles = np.concatenate((x1,y1,x2,y2,sc),axis=1)
+    pick = []
+    for i in range(len(rectangles)):
+	x1 = int(max(0     ,rectangles[i][0]))
+	y1 = int(max(0     ,rectangles[i][1]))
+	x2 = int(min(width ,rectangles[i][2]))
+	y2 = int(min(height,rectangles[i][3]))
+	sc = rectangles[i][4]
+	if x2>x1 and y2>y1:
+	    pick.append([x1,y1,x2,y2,sc])
+    return NMS(pick,0.7,'iou')
 '''
 Function:
 	Filter face position and calibrate bounding box on 12net's output
