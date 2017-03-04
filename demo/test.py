@@ -79,15 +79,15 @@ def detectFace(img_path,threshold):
 
     return rectangles
 
-threshold = [0.6,0.7,0.7]
+threshold = [0.6,0.6,0.7]
 imgpath = ""
 rectangles = detectFace(imgpath,threshold)
 img = cv2.imread(imgpath)
 draw = img.copy()
 for rectangle in rectangles:
-    cv2.putText(draw,str(rectangle[14]),(int(rectangle[0]),int(rectangle[1])),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0))
+    cv2.putText(draw,str(rectangle[4]),(int(rectangle[0]),int(rectangle[1])),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0))
     cv2.rectangle(draw,(int(rectangle[0]),int(rectangle[1])),(int(rectangle[2]),int(rectangle[3])),(255,0,0),1)
-    for i in range(4,14,2):
+    for i in range(5,15,2):
     	cv2.circle(draw,(int(rectangle[i+0]),int(rectangle[i+1])),2,(0,255,0))
 cv2.imshow("test",draw)
 cv2.waitKey()
