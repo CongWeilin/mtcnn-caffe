@@ -93,14 +93,14 @@ Output:
 	rectangles: possible face positions
 '''
 def filter_face_24net(cls_prob,roi,rectangles,width,height,threshold):
-    pick = np.where(cls_prob>=threshold)
+    prob = cls_prob[:,1]
+    pick = np.where(prob>=threshold)
     rectangles = np.array(rectangles)
-    print cls_prob.shape,roi.shape,rectangles.shape,np.array(pick).shape
     x1  = rectangles[pick,0]
     y1  = rectangles[pick,1]
     x2  = rectangles[pick,2]
     y2  = rectangles[pick,3]
-    sc  = np.array([cls_prob[pick]]).T
+    sc  = np.array([prob[pick]]).T
     dx1 = roi[pick,0]
     dx2 = roi[pick,1]
     dx3 = roi[pick,2]
@@ -111,7 +111,6 @@ def filter_face_24net(cls_prob,roi,rectangles,width,height,threshold):
     y1  = np.array([(y1+dx2*h)[0]]).T
     x2  = np.array([(x2+dx3*w)[0]]).T
     y2  = np.array([(y2+dx4*h)[0]]).T
-    print x1.shape,x2.shape,sc.shape
     rectangles = np.concatenate((x1,y1,x2,y2,sc),axis=1)
     pick = []
     for i in range(len(rectangles)):
@@ -185,8 +184,12 @@ def calculateScales(img):
     caffe_img = img.copy()
     pr_scale = 1.0
     h,w,ch = caffe_img.shape
-    if min(w,h)>1000: #max side <= 1000
+    if min(w,h)>1000:
         pr_scale = 1000.0/min(h,w)
+        w = int(w*pr_scale)
+        h = int(h*pr_scale)
+    elif max(w,h)<1000:
+	pr_scale = 1000.0/max(h,w)
         w = int(w*pr_scale)
         h = int(h*pr_scale)
 
