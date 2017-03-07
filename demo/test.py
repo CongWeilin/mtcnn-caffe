@@ -51,7 +51,7 @@ def detectFace(img_path,threshold):
     net_24.blobs['data'].reshape(len(rectangles),3,24,24)
     crop_number = 0
     for rectangle in rectangles:
-        crop_img = caffe_img[rectangle[1]:rectangle[3], rectangle[0]:rectangle[2]]
+        crop_img = caffe_img[int(rectangle[1]):int(rectangle[3]), int(rectangle[0]):int(rectangle[2])]
         scale_img = cv2.resize(crop_img,(24,24))
         scale_img = np.swapaxes(scale_img, 0, 2)
         net_24.blobs['data'].data[crop_number] =scale_img 
@@ -66,7 +66,7 @@ def detectFace(img_path,threshold):
     net_48.blobs['data'].reshape(len(rectangles),3,48,48)
     crop_number = 0
     for rectangle in rectangles:
-        crop_img = caffe_img[rectangle[1]:rectangle[3], rectangle[0]:rectangle[2]]
+        crop_img = caffe_img[int(rectangle[1]):int(rectangle[3]), int(rectangle[0]):int(rectangle[2])]
         scale_img = cv2.resize(crop_img,(48,48))
         scale_img = np.swapaxes(scale_img, 0, 2)
         net_48.blobs['data'].data[crop_number] =scale_img 
@@ -91,5 +91,6 @@ for rectangle in rectangles:
     	cv2.circle(draw,(int(rectangle[i+0]),int(rectangle[i+1])),2,(0,255,0))
 cv2.imshow("test",draw)
 cv2.waitKey()
+cv2.imwrite('test.jpg',draw)
 
 
