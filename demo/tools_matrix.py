@@ -155,7 +155,6 @@ Output:
 	rectangles: face positions and landmarks
 '''
 def filter_face_48net(cls_prob,roi,pts,rectangles,width,height,threshold):
-    print roi.shape,pts.shape
     prob = cls_prob[:,1]
     pick = np.where(prob>=threshold)
     rectangles = np.array(rectangles)
@@ -170,22 +169,21 @@ def filter_face_48net(cls_prob,roi,pts,rectangles,width,height,threshold):
     dx4 = roi[pick,3]
     w   = x2-x1
     h   = y2-y1
-    pts0= np.array([(w*pts[pick,0]+x1-1)[0]]).T
-    pts1= np.array([(h*pts[pick,5]+y1-1)[0]]).T
-    pts2= np.array([(w*pts[pick,1]+x1-1)[0]]).T
-    pts3= np.array([(h*pts[pick,6]+y1-1)[0]]).T
-    pts4= np.array([(w*pts[pick,2]+x1-1)[0]]).T
-    pts5= np.array([(h*pts[pick,7]+y1-1)[0]]).T
-    pts6= np.array([(w*pts[pick,3]+x1-1)[0]]).T
-    pts7= np.array([(h*pts[pick,8]+y1-1)[0]]).T
-    pts8= np.array([(w*pts[pick,4]+x1-1)[0]]).T
-    pts9= np.array([(h*pts[pick,9]+y1-1)[0]]).T
+    pts0= np.array([(w*pts[pick,0]+x1)[0]]).T
+    pts1= np.array([(h*pts[pick,5]+y1)[0]]).T
+    pts2= np.array([(w*pts[pick,1]+x1)[0]]).T
+    pts3= np.array([(h*pts[pick,6]+y1)[0]]).T
+    pts4= np.array([(w*pts[pick,2]+x1)[0]]).T
+    pts5= np.array([(h*pts[pick,7]+y1)[0]]).T
+    pts6= np.array([(w*pts[pick,3]+x1)[0]]).T
+    pts7= np.array([(h*pts[pick,8]+y1)[0]]).T
+    pts8= np.array([(w*pts[pick,4]+x1)[0]]).T
+    pts9= np.array([(h*pts[pick,9]+y1)[0]]).T
     x1  = np.array([(x1+dx1*w)[0]]).T
     y1  = np.array([(y1+dx2*h)[0]]).T
     x2  = np.array([(x2+dx3*w)[0]]).T
     y2  = np.array([(y2+dx4*h)[0]]).T
     rectangles=np.concatenate((x1,y1,x2,y2,sc,pts0,pts1,pts2,pts3,pts4,pts5,pts6,pts7,pts8,pts9),axis=1)
-    rectangles = rect2square(rectangles)
     pick = []
     for i in range(len(rectangles)):
 	x1 = int(max(0     ,rectangles[i][0]))
@@ -220,7 +218,7 @@ def calculateScales(img):
 
     #multi-scale
     scales = []
-    factor = 0.7937
+    factor = 0.709
     factor_count = 0
     minl = min(h,w)
     while minl >= 12:
