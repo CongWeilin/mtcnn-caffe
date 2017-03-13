@@ -58,8 +58,11 @@ A6: If you input a (X,X) image, the output Y = (X-11)/2. Every point on output r
 Q7: What is roi(cls/pts).imdb used for?<br/>
 A7: Use imdb can feed training data into training net faster. Instead of random search data from the hard-disk, reading data from a large file once to memory will save you a lot of time. `imdb` was created by python module-cPickle.
 
-Q8: What is `tools_matrix.py` different from `tools.py`?
-A7: Matrix version use linear matrix to make calculation faster(160ms on FDDB). If you are green hand in this area, read Non-Matrix version to understand each process.
+Q8: What is `tools_matrix.py` different from `tools.py`?<br/>
+A8: Matrix version use linear matrix to make calculation faster(160ms on FDDB). If you are green hand in this area, read Non-Matrix version to understand each process.
+
+Q9: I want your training data for emergency use. How to use them? How to train? ...<br/>
+A9: ???
 ## Current Status
 CongWeilin updated in 2017/3/5
 
