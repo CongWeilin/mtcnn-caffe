@@ -1,10 +1,11 @@
-name: "face_12c"
+name: "face_24c"
 layer {
   name: "PythonLayer"
   type: "Python"
   top: "data"
   top: "label"
   top: "roi"
+  top: "pts"
   python_param {
     module: "pythonLayer"
     layer:  "Data_Layer_train"
@@ -185,25 +186,25 @@ layer {
   top: "label-valid"
   python_param {
     module: "pythonLayer"
-    layer:  "cls_Layer24"
+    layer:  "cls_Layer"
   }
 }
 layer {
-  name: "ClassifyLoss"
+  name: "cls_loss"
   type: "SoftmaxWithLoss"
   bottom: "fc5-1-valid"
   bottom: "label-valid"
-  top: "ClassifyLoss"
+  top: "cls_loss"
   propagate_down: 1
   propagate_down: 0
   loss_weight: 1
 }
 layer {
-  name: "cls_Acc"
+  name: "cls_acc"
   type: "Accuracy"
   bottom: "fc5-1-valid"
   bottom: "label-valid"
-  top: "cls_Acc"
+  top: "cls_acc"
   include {
     phase: TRAIN
   }
@@ -214,15 +215,15 @@ layer {
   bottom: "fc4"
   top: "fc5-2"
   param {
-    lr_mult: 10
-    decay_mult: 10
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   inner_product_param {
-    num_output: 27
+    num_output: 4
     weight_filler {
      type: "xavier"
     }
@@ -233,34 +234,50 @@ layer {
   }
 }
 layer {
-  name: "roi_bridge"
+  name: "roi_loss"
   type: "Python"
   bottom: "fc5-2"
   bottom: "roi"
-  top: "fc5-2-valid"
-  top: "roi-valid"
+  top: "roi_loss"
+  loss_weight: 0.5
   python_param {
     module: "pythonLayer"
-    layer:  "roi_Layer24"
+    layer:  "regression_Layer"
   }
 }
 layer {
-  name: "RegressionLoss"
-  type: "SoftmaxWithLoss"
-  bottom: "fc5-2-valid"
-  bottom: "roi-valid"
-  top: "RegressionLoss"
-  propagate_down: 1
-  propagate_down: 0
-  loss_weight: 0.5
+  name: "fc5-3"
+  type: "InnerProduct"
+  bottom: "fc4"
+  top: "fc5-3"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 10
+    weight_filler {
+     type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
 }
 layer {
-  name: "roi_Acc"
-  type: "Accuracy"
-  bottom: "fc5-2-valid"
-  bottom: "roi-valid"
-  top: "roi_Acc"
-  include {
-    phase: TRAIN
+  name: "pts_loss"
+  type: "Python"
+  bottom: "fc5-3"
+  bottom: "pts"
+  top: "pts_loss"
+  loss_weight: 0.5
+  python_param {
+    module: "pythonLayer"
+    layer:  "regression_Layer"
   }
 }
