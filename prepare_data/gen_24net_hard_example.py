@@ -8,11 +8,11 @@ import cv2
 import numpy as np
 import os
 from utils import *
-deploy = '12net.prototxt'
-caffemodel = '12net.caffemodel'
+deploy = '../demo/12net.prototxt'
+caffemodel = '../demo/12net.caffemodel'
 net_12 = caffe.Net(deploy,caffemodel,caffe.TEST)
-deploy = '24net.prototxt'
-caffemodel = '24net.caffemodel'
+deploy = '../demo/24net.prototxt'
+caffemodel = '../demo/24net.caffemodel'
 net_24 = caffe.Net(deploy,caffemodel,caffe.TEST)
 def view_bar(num, total):
     rate = float(num) / total

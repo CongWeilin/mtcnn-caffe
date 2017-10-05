@@ -209,8 +209,8 @@ layer {
   }
 }
 layer {
-  name: "prob1"
+  name: "cls_score"
   type: "Softmax"
   bottom: "conv5-1"
-  top: "prob1"
+  top: "cls_score"
 }
