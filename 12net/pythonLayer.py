@@ -170,7 +170,7 @@ class BatchLoader(object):
                 random.shuffle(self.roi_list)
 	    cur_data = self.roi_list[self.roi_cur]  # Get the image index
 	    im	     = cur_data[0]
-            label    = -1
+            label    = cur_data[1]
             roi      = cur_data[2]
 	    pts	     = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
             self.roi_cur += 1
