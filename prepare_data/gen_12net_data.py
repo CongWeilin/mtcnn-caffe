@@ -89,7 +89,7 @@ for annotation in annotations:
             offset_x2 = (x2 - nx2) / float(size)
             offset_y2 = (y2 - ny2) / float(size)
 
-            cropped_im = img[ny1 : ny2, nx1 : nx2, :]
+            cropped_im = img[int(ny1) : int(ny2), int(nx1) : int(nx2), :]
             resized_im = cv2.resize(cropped_im, (12, 12), interpolation=cv2.INTER_LINEAR)
 
             box_ = box.reshape(1, -1)
