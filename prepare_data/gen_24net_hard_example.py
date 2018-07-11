@@ -8,11 +8,11 @@ import cv2
 import numpy as np
 import os
 from utils import *
-deploy = '12net.prototxt'
-caffemodel = '12net.caffemodel'
+deploy = '../12net/12net.prototxt'
+caffemodel = '../12net/12net.caffemodel'
 net_12 = caffe.Net(deploy,caffemodel,caffe.TEST)
-deploy = '24net.prototxt'
-caffemodel = '24net.caffemodel'
+deploy = '../24net/24net.prototxt'
+caffemodel = '../24net/24net.caffemodel'
 net_24 = caffe.Net(deploy,caffemodel,caffe.TEST)
 def view_bar(num, total):
     rate = float(num) / total
@@ -40,7 +40,7 @@ def detectFace(img_path,threshold):
     image_num = len(scales)
     rectangles = []
     for i in range(image_num):    
-        cls_prob = out[i]['cls_score'][0][1]
+        cls_prob = out[i]['prob1'][0][1]
         roi      = out[i]['conv4-2'][0]
         out_h,out_w = cls_prob.shape
         out_side = max(out_h,out_w)
@@ -57,8 +57,8 @@ def detectFace(img_path,threshold):
         net_24.blobs['data'].data[crop_number] =scale_img 
         crop_number += 1
     out = net_24.forward()
-    cls_prob = out['cls_score']
-    roi_prob = out['fc5-2']
+    cls_prob = out['prob1']
+    roi_prob = out['conv5-2']
     rectangles = tools.filter_face_24net(cls_prob,roi_prob,rectangles,origin_w,origin_h,threshold[1])
     return rectangles
 
