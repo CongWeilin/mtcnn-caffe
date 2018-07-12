@@ -49,6 +49,11 @@ im_dir = "WIDER_train/images/"
 neg_save_dir  = "24/negative"
 pos_save_dir  = "24/positive"
 part_save_dir = "24/part"
+
+ensure_directory_exists(neg_save_dir)
+ensure_directory_exists(pos_save_dir)
+ensure_directory_exists(part_save_dir)
+
 image_size = 24
 f1 = open('24/pos_24.txt', 'w')
 f2 = open('24/neg_24.txt', 'w')

@@ -53,3 +53,7 @@ def convert_to_square(bbox):
     square_bbox[:, 2] = square_bbox[:, 0] + max_side - 1
     square_bbox[:, 3] = square_bbox[:, 1] + max_side - 1
     return square_bbox
+
+def ensure_directory_exists(path):
+    if not os.path.exists(path):
+        os.mkdir(path)

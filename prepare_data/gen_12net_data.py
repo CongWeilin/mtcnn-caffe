@@ -5,14 +5,19 @@ import cv2
 import os
 import numpy.random as npr
 from utils import IoU
+from utils import ensure_directory_exists
 anno_file = "wider_face_train.txt"
 im_dir = "WIDER_train/images"
 pos_save_dir = "12/positive"
 part_save_dir = "12/part"
 neg_save_dir = '12/negative'
 save_dir = "./12"
-if not os.path.exists(save_dir):
-    os.mkdir(save_dir)
+
+ensure_directory_exists(save_dir)
+ensure_directory_exists(pos_save_dir)
+ensure_directory_exists(neg_save_dir)
+ensure_directory_exists(part_save_dir)
+
 f1 = open(os.path.join(save_dir, 'pos_12.txt'), 'w')
 f2 = open(os.path.join(save_dir, 'neg_12.txt'), 'w')
 f3 = open(os.path.join(save_dir, 'part_12.txt'), 'w')
