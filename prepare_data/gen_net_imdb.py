@@ -43,6 +43,8 @@ for line in pos:
     roi      = [-1,-1,-1,-1]
     pts	     = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
     cls_list.append([im,label,roi])
+
+
 print '\n'+'negative-48'
 cur_ = 0
 neg_keep = npr.choice(len(neg), size=600000, replace=False)

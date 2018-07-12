@@ -8,10 +8,10 @@ from utils import IoU
 from utils import ensure_directory_exists
 anno_file = "wider_face_train.txt"
 im_dir = "WIDER_train/images"
-pos_save_dir = "12/positive"
-part_save_dir = "12/part"
-neg_save_dir = '12/negative'
-save_dir = "./12"
+pos_save_dir = "../12net/12/positive"
+part_save_dir = "../12net/12/part"
+neg_save_dir = '../12net/12/negative'
+save_dir = "../12net/12"
 
 ensure_directory_exists(save_dir)
 ensure_directory_exists(pos_save_dir)

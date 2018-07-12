@@ -64,18 +64,18 @@ def detectFace(img_path,threshold):
 
 anno_file = 'wider_face_train.txt'
 im_dir = "WIDER_train/images/"
-neg_save_dir  = "48/negative"
-pos_save_dir  = "48/positive"
-part_save_dir = "48/part"
+neg_save_dir  = "../48net/48/negative"
+pos_save_dir  = "../48net/48/positive"
+part_save_dir = "../48net/48/part"
 
 ensure_directory_exists(neg_save_dir)
 ensure_directory_exists(pos_save_dir)
 ensure_directory_exists(part_save_dir)
 
 image_size = 48
-f1 = open('48/pos_48.txt', 'w')
-f2 = open('48/neg_48.txt', 'w')
-f3 = open('48/part_48.txt', 'w')
+f1 = open('../48net/48/pos_48.txt', 'w')
+f2 = open('../48net/48/neg_48.txt', 'w')
+f3 = open('../48net/48/part_48.txt', 'w')
 threshold = [0.6,0.7,0.3]
 with open(anno_file, 'r') as f:
     annotations = f.readlines()
