@@ -5,14 +5,21 @@ import cv2
 import os
 import numpy.random as npr
 from utils import IoU
+from utils import ensure_directory_exists
 anno_file = "wider_face_train.txt"
 im_dir = "WIDER_train/images"
-pos_save_dir = "48/positive"
-part_save_dir = "48/part"
-neg_save_dir = '48/negative'
-save_dir = "./48"
-if not os.path.exists(save_dir):
-    os.mkdir(save_dir)
+pos_save_dir = "../48net/48/positive"
+part_save_dir = "../48net/48/part"
+neg_save_dir = '../48net/48/negative'
+save_dir = "../48net/48"
+
+
+ensure_directory_exists(save_dir)
+ensure_directory_exists(pos_save_dir)
+ensure_directory_exists(neg_save_dir)
+ensure_directory_exists(part_save_dir)
+
+
 f1 = open(os.path.join(save_dir, 'pos_48.txt'), 'w')
 f2 = open(os.path.join(save_dir, 'neg_48.txt'), 'w')
 f3 = open(os.path.join(save_dir, 'part_48.txt'), 'w')
@@ -75,8 +82,8 @@ for annotation in annotations:
             delta_x = npr.randint(-w * 0.2, w * 0.2)
             delta_y = npr.randint(-h * 0.2, h * 0.2)
 
-            nx1 = max(x1 + w / 2 + delta_x - size / 2, 0)
-            ny1 = max(y1 + h / 2 + delta_y - size / 2, 0)
+            nx1 = max(int(x1 + w / 2 + delta_x - size / 2), 0)
+            ny1 = max(int(y1 + h / 2 + delta_y - size / 2), 0)
             nx2 = nx1 + size
             ny2 = ny1 + size
 

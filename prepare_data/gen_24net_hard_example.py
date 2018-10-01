@@ -8,11 +8,11 @@ import cv2
 import numpy as np
 import os
 from utils import *
-deploy = '12net.prototxt'
-caffemodel = '12net.caffemodel'
+deploy = '../12net/12net.prototxt'
+caffemodel = '../12net/12net.caffemodel'
 net_12 = caffe.Net(deploy,caffemodel,caffe.TEST)
-deploy = '24net.prototxt'
-caffemodel = '24net.caffemodel'
+deploy = '../24net/24net.prototxt'
+caffemodel = '../24net/24net.caffemodel'
 net_24 = caffe.Net(deploy,caffemodel,caffe.TEST)
 def view_bar(num, total):
     rate = float(num) / total
@@ -40,7 +40,7 @@ def detectFace(img_path,threshold):
     image_num = len(scales)
     rectangles = []
     for i in range(image_num):    
-        cls_prob = out[i]['cls_score'][0][1]
+        cls_prob = out[i]['prob1'][0][1]
         roi      = out[i]['conv4-2'][0]
         out_h,out_w = cls_prob.shape
         out_side = max(out_h,out_w)
@@ -57,20 +57,25 @@ def detectFace(img_path,threshold):
         net_24.blobs['data'].data[crop_number] =scale_img 
         crop_number += 1
     out = net_24.forward()
-    cls_prob = out['cls_score']
-    roi_prob = out['fc5-2']
+    cls_prob = out['prob1']
+    roi_prob = out['conv5-2']
     rectangles = tools.filter_face_24net(cls_prob,roi_prob,rectangles,origin_w,origin_h,threshold[1])
     return rectangles
 
 anno_file = 'wider_face_train.txt'
 im_dir = "WIDER_train/images/"
-neg_save_dir  = "48/negative"
-pos_save_dir  = "48/positive"
-part_save_dir = "48/part"
+neg_save_dir  = "../48net/48/negative"
+pos_save_dir  = "../48net/48/positive"
+part_save_dir = "../48net/48/part"
+
+ensure_directory_exists(neg_save_dir)
+ensure_directory_exists(pos_save_dir)
+ensure_directory_exists(part_save_dir)
+
 image_size = 48
-f1 = open('48/pos_48.txt', 'w')
-f2 = open('48/neg_48.txt', 'w')
-f3 = open('48/part_48.txt', 'w')
+f1 = open('../48net/48/pos_48.txt', 'w')
+f2 = open('../48net/48/neg_48.txt', 'w')
+f3 = open('../48net/48/part_48.txt', 'w')
 threshold = [0.6,0.7,0.3]
 with open(anno_file, 'r') as f:
     annotations = f.readlines()

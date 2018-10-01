@@ -8,8 +8,8 @@ import cv2
 import numpy as np
 import os
 from utils import *
-deploy = '12net.prototxt'
-caffemodel = '12net.caffemodel'
+deploy = '../12net/12net.prototxt'
+caffemodel = '../12net/12net.caffemodel'
 net_12 = caffe.Net(deploy,caffemodel,caffe.TEST)
 def view_bar(num, total):
     rate = float(num) / total
@@ -37,7 +37,7 @@ def detectFace(img_path,threshold):
     image_num = len(scales)
     rectangles = []
     for i in range(image_num):    
-        cls_prob = out[i]['cls_score'][0][1]
+        cls_prob = out[i]['prob1'][0][1]
         roi      = out[i]['conv4-2'][0]
         out_h,out_w = cls_prob.shape
         out_side = max(out_h,out_w)
@@ -46,13 +46,18 @@ def detectFace(img_path,threshold):
     return rectangles
 anno_file = 'wider_face_train.txt'
 im_dir = "WIDER_train/images/"
-neg_save_dir  = "24/negative"
-pos_save_dir  = "24/positive"
-part_save_dir = "24/part"
+neg_save_dir  = "../24net/24/negative"
+pos_save_dir  = "../24net/24/positive"
+part_save_dir = "../24net/24/part"
+
+ensure_directory_exists(neg_save_dir)
+ensure_directory_exists(pos_save_dir)
+ensure_directory_exists(part_save_dir)
+
 image_size = 24
-f1 = open('24/pos_24.txt', 'w')
-f2 = open('24/neg_24.txt', 'w')
-f3 = open('24/part_24.txt', 'w')
+f1 = open('../24net/24/pos_24.txt', 'w')
+f2 = open('../24net/24/neg_24.txt', 'w')
+f3 = open('../24net/24/part_24.txt', 'w')
 threshold = [0.6,0.6,0.7]
 with open(anno_file, 'r') as f:
     annotations = f.readlines()

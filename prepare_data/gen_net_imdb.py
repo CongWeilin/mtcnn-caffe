@@ -26,12 +26,13 @@ import numpy as np
 cls_list = []
 print '\n'+'positive-48'
 cur_ = 0
-sum_ = len(pos2)
-for line in pos2:
+sum_ = len(pos)
+for line in pos:
     view_bar(cur_,sum_)
     cur_ += 1
     words = line.split()
-    image_file_name = '../48net/'+words[0]+'.jpg'
+    image_file_name = words[0]+'.jpg'
+    print (image_file_name)
     im = cv2.imread(image_file_name)
     h,w,ch = im.shape
     if h!=48 or w!=48:
@@ -42,16 +43,18 @@ for line in pos2:
     roi      = [-1,-1,-1,-1]
     pts	     = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
     cls_list.append([im,label,roi])
+
+
 print '\n'+'negative-48'
 cur_ = 0
-neg_keep = npr.choice(len(neg2), size=600000, replace=False)
+neg_keep = npr.choice(len(neg), size=600000, replace=False)
 sum_ = len(neg_keep)
 for i in neg_keep:
-    line = neg2[i]
+    line = neg[i]
     view_bar(cur_,sum_)
     cur_ += 1
     words = line.split()
-    image_file_name = '../48net/'+words[0]+'.jpg'
+    image_file_name = words[0]+'.jpg'
     im = cv2.imread(image_file_name)
     h,w,ch = im.shape
     if h!=48 or w!=48:
@@ -63,7 +66,7 @@ for i in neg_keep:
     pts	     = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
     cls_list.append([im,label,roi]) 
 import cPickle as pickle
-fid = open("../48net/48/cls.imdb",'w')
+fid = open("48/cls.imdb",'w')
 pickle.dump(cls_list, fid)
 fid.close()
 
@@ -77,7 +80,7 @@ for i in part_keep:
     view_bar(cur_,sum_)
     cur_ += 1
     words = line.split()
-    image_file_name = '../48net/'+words[0]+'.jpg'
+    image_file_name = words[0]+'.jpg'
     im = cv2.imread(image_file_name)
     h,w,ch = im.shape
     if h!=48 or w!=48:
@@ -90,12 +93,12 @@ for i in part_keep:
     roi_list.append([im,label,roi])
 print '\n'+'positive-48'
 cur_ = 0
-sum_ = len(pos2)
-for line in pos2:
+sum_ = len(pos)
+for line in pos:
     view_bar(cur_,sum_)
     cur_ += 1
     words = line.split()
-    image_file_name = '../48net/'+words[0]+'.jpg'
+    image_file_name = words[0]+'.jpg'
     im = cv2.imread(image_file_name)
     h,w,ch = im.shape
     if h!=48 or w!=48:
@@ -107,6 +110,6 @@ for line in pos2:
     pts	     = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
     roi_list.append([im,label,roi])
 import cPickle as pickle
-fid = open("../48net/48/roi.imdb",'w')
+fid = open("48/roi.imdb",'w')
 pickle.dump(roi_list, fid)
 fid.close()
